@@ -22,6 +22,7 @@ import re
 import secrets
 from datetime import datetime, timezone, timedelta
 from html import escape
+from pathlib import Path
 
 import json
 import psycopg
@@ -339,7 +340,36 @@ def _rep_dict(row) -> dict:
         d["profile"]["book_url"] = d["book_url"]
     if d.get("rating") is not None:
         d["rating"] = float(d["rating"])
+    _merge_sales_chat_brand(d)
     return d
+
+
+def _merge_sales_chat_brand(rep: dict) -> None:
+    """Bring the real Frontman brand asset into the legacy card workspace.
+
+    The card workspace and the old dashboard used to store the same rep twice. That is why
+    the app could show the right name but a generated R mark instead of the owner's uploaded
+    logo. Read only the existing branding record; never invent or copy an asset.
+    """
+    slug = str(rep.get("slug") or "").strip()
+    if not slug:
+        return
+    path = Path(os.environ.get(
+        "FRONTMAN_BRANDING_DIR", "/opt/rhobear/sales-chat/data/branding",
+    )) / f"{slug}.json"
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError, json.JSONDecodeError):
+        return
+    if not isinstance(data, dict):
+        return
+    profile = rep["profile"]
+    if data.get("logo") and not profile.get("logo_url"):
+        profile["logo_url"] = str(data["logo"])
+    if data.get("portrait") and not rep.get("photo_url"):
+        rep["photo_url"] = str(data["portrait"])
+    if str(profile.get("badge") or "").strip().upper() == "RHOBEAR SALES":
+        profile["badge"] = "RHOBEAR FRONTMAN"
 
 
 def _load(token: str):
