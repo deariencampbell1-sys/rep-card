@@ -221,7 +221,9 @@ def contact(cid: int):
 @app.get("/card/appts", response_class=HTMLResponse)
 def appts(f: str = "all"):
     with db() as c:
-        where = {"mine": "WHERE a.rep_id IS NOT NULL", "un": "WHERE a.rep_id IS NULL"}.get(f, "")
+        # The workspace must never present stale/past seed rows as current appointments.
+        where = {"mine": "WHERE a.rep_id IS NOT NULL AND a.at >= now()",
+                 "un": "WHERE a.rep_id IS NULL AND a.at >= now()"}.get(f, "WHERE a.at >= now()")
         rows = c.execute(
             "SELECT a.id,a.title,a.at,a.status,"
             "coalesce(ct.first||' '||coalesce(ct.last,''),'—'),a.contact_id,r.name "
