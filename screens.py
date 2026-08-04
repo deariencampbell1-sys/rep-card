@@ -22,7 +22,7 @@ def send_html(rep: dict, reps: list) -> str:
 
     return f"""
 <div class="wrap">
-  <div class="eyebrow">Send business card</div>
+  <div class="eyebrow">Send Frontman card</div>
   <div style="display:flex;align-items:center;gap:8px;margin:6px 0 16px">
     <select id="rep" style="width:auto;padding:8px 12px;font-size:15px;font-weight:600">{opts}</select>
   </div>
@@ -63,8 +63,7 @@ def send_html(rep: dict, reps: list) -> str:
   <button class="btn" id="go">Save lead &amp; send card</button>
   <p class="muted" id="hint" style="margin-top:12px;text-align:center;min-height:20px"></p>
   <p class="muted" style="margin-top:4px;text-align:center;font-size:11.5px;opacity:.7">
-    The text opens in your own messaging app and sends from your real number — no 844 number,
-    no carrier registration.</p>
+    The message opens in your own app and sends from your real number — no shared sending number.</p>
 </div>
 <style>.kind,.chan{{padding:9px 15px;border-radius:999px;border:1px solid var(--line);
 background:transparent;color:var(--dim);font-size:13px;font-family:inherit;cursor:pointer}}
@@ -138,7 +137,7 @@ def contacts_html(rows: list, active: str) -> str:
 
     return f"""
 <div class="wrap">
-  <div class="eyebrow">RHOBEAR Sales</div>
+  <div class="eyebrow">RHOBEAR Frontman</div>
   <h1 style="margin:8px 0 4px">Contacts</h1>
   <p class="muted">Everyone you've saved, warmest first.</p>
   <div class="seg">{segs}</div>
@@ -183,7 +182,7 @@ def appts_html(rows: list, active: str, month: str) -> str:
 
     return f"""
 <div class="wrap">
-  <div class="eyebrow">RHOBEAR Sales</div>
+  <div class="eyebrow">RHOBEAR Frontman</div>
   <h1 style="margin:8px 0 4px">{escape(month)}</h1>
   <p class="muted">Appointments your cards created.</p>
   <div class="seg">{segs}</div>

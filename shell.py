@@ -4,8 +4,8 @@ Four tabs, matching how field reps actually work. The send flow is lead-capture-
 a card send is the LAST step of saving a contact, not a standalone action. Minimum to
 send is a first name plus one reachable channel (phone or email).
 
-Home carries the LOCKED-PANEL cross-sell from BIBLE-SALES §3 — a card-only customer
-sees the chatbot half greyed out with a price on it.
+The home screen is the real rep workspace: live card activity, contacts, and appointments.
+It does not invent website-chat numbers or sell a separate product inside the app.
 """
 from __future__ import annotations
 
@@ -52,6 +52,13 @@ display:grid;place-items:center;border:0;cursor:pointer;text-decoration:none;
 background:linear-gradient(135deg,var(--accent),var(--violet));box-shadow:0 10px 28px rgba(0,0,0,.5)}
 .empty{text-align:center;padding:52px 20px}
 .empty svg{opacity:.30;margin-bottom:16px}
+.theme-toggle{position:fixed;top:14px;right:16px;z-index:50;border:1px solid var(--line);
+background:var(--panel);color:var(--ink);border-radius:999px;padding:8px 11px;font:inherit;
+font-size:12px;cursor:pointer;backdrop-filter:blur(14px)}
+.theme-toggle:hover{border-color:var(--accent)}
+html[data-theme="light"]{--bg:#F4F7F5;--panel:rgba(255,255,255,.86);--line:rgba(22,34,30,.14);
+--ink:#16221E;--dim:rgba(22,34,30,.62);--accent:#2D6A4F;--violet:#1D5C73}
+html[data-theme="light"] input,html[data-theme="light"] select,html[data-theme="light"] textarea{background:rgba(255,255,255,.78);color:var(--ink)}
 """
 
 TAB_ICONS = {
@@ -71,7 +78,27 @@ def tabs(active: str) -> str:
         out.append(f'<a class="tab{on}" href="{href}">'
                    f'<svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor">{TAB_ICONS[key]}</svg>'
                    f'<span>{label}</span></a>')
-    return f'<nav class="tabs">{"".join(out)}</nav>'
+    return f'''<button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch color mode">
+  <span aria-hidden="true">◐</span> <span id="theme-label">Light</span>
+</button>
+<nav class="tabs">{"".join(out)}</nav>
+<script>
+(function () {{
+  var root = document.documentElement;
+  var saved = localStorage.getItem("frontman-theme") || "dark";
+  root.setAttribute("data-theme", saved);
+  var button = document.getElementById("theme-toggle");
+  var label = document.getElementById("theme-label");
+  function paint() {{ label.textContent = root.getAttribute("data-theme") === "light" ? "Dark" : "Light"; }}
+  paint();
+  button.addEventListener("click", function () {{
+    var next = root.getAttribute("data-theme") === "light" ? "dark" : "light";
+    root.setAttribute("data-theme", next);
+    localStorage.setItem("frontman-theme", next);
+    paint();
+  }});
+}}());
+</script>'''
 
 
 def card_strip(rep: dict, token_for_logo: str | None = None) -> str:
@@ -123,9 +150,9 @@ def home_html(s: dict) -> str:
 
     return f"""
 <div class="wrap">
-  <div class="eyebrow">RHOBEAR Sales</div>
-  <h1 style="margin:8px 0 5px">Sales board</h1>
-  <p class="muted" style="margin-bottom:20px">Your team in the field, and your site, in one place.</p>
+  <div class="eyebrow">RHOBEAR Frontman</div>
+  <h1 style="margin:8px 0 5px">Frontman</h1>
+  <p class="muted" style="margin-bottom:20px">Your card, contacts, and next appointments in one place.</p>
 
   <div class="grid2" style="margin-bottom:9px">
     <div class="stat"><div class="n">{s['sent']}</div><div class="k">Cards sent</div></div>
@@ -155,26 +182,5 @@ def home_html(s: dict) -> str:
   <div class="sec"><h2>Hot leads</h2><div class="panel">{hot_rows}</div></div>
   <div class="sec"><h2>Reps</h2><div class="panel">{leaders}</div></div>
 
-  <div class="sec"><h2>Your website bot</h2>
-    <div class="locked">
-      <div class="inner">
-        <div class="grid2" style="margin-bottom:9px">
-          <div class="stat"><div class="n">248</div><div class="k">Site conversations</div></div>
-          <div class="stat"><div class="n">31</div><div class="k">Leads captured</div></div>
-        </div>
-        <div class="frow"><div class="lbl">"Do you finance?"</div><div class="val">42 asks</div></div>
-        <div class="frow"><div class="lbl">"Cost for 2,000 sq ft?"</div><div class="val">28 asks</div></div>
-        <div class="frow"><div class="lbl">Booked from chat</div><div class="val">11</div></div>
-      </div>
-      <div class="lockover">
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="var(--dim)">
-          <path d="M18 8h-1V6A5 5 0 007 6v2H6a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V10a2 2 0 00-2-2zM9 6a3 3 0 016 0v2H9zm3 12a2 2 0 110-4 2 2 0 010 4z"/></svg>
-        <p style="font-size:15px;font-weight:600">Sales Chat isn't on this account</p>
-        <p class="muted" style="max-width:290px">Your reps work the field. Add the bot and your website
-          works the same shift — same board, same lead list.</p>
-        <a class="btn" style="max-width:250px;margin-top:5px"
-           href="https://rhobear.ai/sales.html" target="_blank" rel="noopener">Add it — $47 once</a>
-      </div>
-    </div></div>
 </div>
 {tabs('home')}"""

@@ -1,7 +1,7 @@
-"""RHOBEAR Rep Card — PROTOTYPE.
+"""RHOBEAR Frontman — the live card workspace.
 
-Single tenant, hardcoded rep. Multi-tenancy is Phase 0 in BIBLE-SALES.md §8.1 and is
-deliberately NOT here — this exists so the owner can hold it on a real phone and judge the idea.
+The workspace uses the real rep, contact, send, event, and appointment records from Postgres.
+It does not render sample lead or appointment rows.
 
 Surfaces
   GET  /card/                 rep PWA: pick rep, type a number, Send Card -> opens the phone's SMS app
@@ -13,7 +13,7 @@ Surfaces
   POST /card/e                event beacon
   GET  /card/health
 
-Runs on 127.0.0.1:8002 behind the existing sales.rhobear.ai Caddy block.
+Runs on 127.0.0.1:8002 behind the Frontman Caddy block.
 """
 from __future__ import annotations
 
@@ -33,9 +33,9 @@ from shell import tabs, home_html, SHELL_CSS, card_strip
 from screens import send_html, contacts_html, appts_html
 
 DSN = os.environ.get("REPCARD_DSN", "postgresql:///sales?host=/var/run/postgresql")
-BASE = os.environ.get("REPCARD_BASE", "https://sales.rhobear.ai")
+BASE = os.environ.get("REPCARD_BASE", "https://frontman.rhobear.ai")
 
-app = FastAPI(title="RHOBEAR Rep Card (prototype)")
+app = FastAPI(title="RHOBEAR Frontman")
 
 
 def db():
@@ -268,7 +268,7 @@ def home():
     counts = [int(n) for _, n in week] or [0]
     padded = ([0] * (7 - len(counts)) + counts)[-7:]
 
-    return page("Sales board · RHOBEAR", home_html({
+    return page("Frontman · RHOBEAR", home_html({
         "sent": len(sends), "opened": opened, "engaged": engaged, "acted": acted,
         "contacts": ncontacts, "hot_count": len(hot), "hot": hot[:5],
         "leaders": sorted(((n, c_, h) for n, (c_, h) in per_rep.items()), key=lambda x: -x[1])[:5],
@@ -293,7 +293,7 @@ async def mint(request: Request):
 @app.get("/card/manifest.webmanifest")
 def manifest():
     return JSONResponse({
-        "name": "RHOBEAR Rep Card", "short_name": "Rep Card",
+        "name": "RHOBEAR Frontman", "short_name": "Frontman",
         "start_url": "/card/", "scope": "/card/", "display": "standalone",
         "background_color": "#0A0A12", "theme_color": "#0A0A12",
         "icons": [{"src": "/card/icon.svg", "sizes": "any", "type": "image/svg+xml"}],
@@ -493,9 +493,9 @@ def dash():
 </div></a>""")
 
     empty = '<p class="muted">No cards sent yet. Send one, then open it on another device.</p>'
-    return page("Logbook · RHOBEAR", f"""
+    return page("Frontman logbook · RHOBEAR", f"""
 <div class="wrap">
-  <div class="eyebrow">RHOBEAR Sales</div>
+  <div class="eyebrow">RHOBEAR Frontman</div>
   <h1 style="margin:8px 0 6px">Logbook</h1>
   <p class="muted" style="margin-bottom:22px">Ranked by what they actually did — recent taps beat old opens.</p>
   {''.join(rows) if rows else empty}
@@ -608,4 +608,4 @@ def board():
 def health():
     with db() as c:
         c.execute("SELECT 1")
-    return {"ok": True, "surface": "repcard-prototype"}
+    return {"ok": True, "surface": "frontman"}
